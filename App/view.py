@@ -1,4 +1,6 @@
 import sys
+import App.logic as lg
+import DataStructures.single_linked as ll
 
 
 def new_logic():
@@ -24,7 +26,9 @@ def load_data(control):
     Carga los datos
     """
     #TODO: Realizar la carga de datos
-    pass
+    catalog = new_logic()
+    catalog = lg.load_data(catalog)
+    return catalog
 
 
 def print_data(control, id):
@@ -32,14 +36,34 @@ def print_data(control, id):
         Función que imprime un dato dado su ID
     """
     #TODO: Realizar la función para imprimir un elemento
-    pass
+    print(lg.get_data(control, id))
 
-def print_req_1(control):
+def print_req_1(data, date_min, date_max, num):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    info = lg.req_1(data, date_min, date_max, num)
+    if len(info) == 3:
+        final_list, num, time = info
+        print(f"\nTiempo de ejecución: {time} ms")
+        print(f"Número total de trayectos en la franja: {ll.size(final_list)}")
+        print(f"\nLos {num} primeros trayectos en la franja son:")
+        for i in range(num):
+            print(ll.get_element(final_list, i))
+        print(f"\nLos {num} últimos trayectos en la franja son:")
+        for i in range(ll.size(final_list) - num, ll.size(final_list)):
+            print(ll.get_element(final_list, i))
+    else:
+        final_list_1, final_list_2, total, time = info
+        print(f"\nTiempo de ejecución: {time} ms")
+        print(f"Número total de trayectos en la franja: {total}")
+        print(f"\nLos {num} primeros trayectos en la franja son:")
+        for i in range(num):
+            print(ll.get_element(final_list_1, i))
+        print(f"\nLos {num} últimos trayectos en la franja son:")
+        for i in range(num):
+            print(ll.get_element(final_list_2, i))
 
 
 def print_req_2(control):
@@ -97,8 +121,13 @@ def main():
         if int(inputs) == 0:
             print("Cargando información de los archivos ....\n")
             data = load_data(control)
+            print(data)
         elif int(inputs) == 1:
             print_req_1(control)
+            date_min = input("Ingrese la fecha y hora inicial de la franja (formato “%Y-%m-%d %H:%M:%S” ej.: '2015-01-15 07:00:00'): ")
+            date_max = input("Ingrese la fecha y hora final de la franja: ")
+            num = int(input("Ingrese el tamaño de la muestra (num) de trayectos a mostrar al principio y al final de la franja: "))
+            print_req_1(data, date_min, date_max, num)
 
         elif int(inputs) == 2:
             print_req_2(control)
