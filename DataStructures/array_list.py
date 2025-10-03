@@ -5,15 +5,17 @@ def dflt_elm_cmp_lt(id1, id2) -> int:
         return -1
     return 0
 
-def new_list(cmp_function, key: str = "id"):
+def new_list(key: str = "id"):
     new_lt = dict(
         elements=[],
-        size=0,
+        size = 0,
         type="ARRAYLIST",
-        cmp_function=cmp_function or dflt_elm_cmp_lt,
-        key=key,
+        cmp_function = dflt_elm_cmp_lt,
     )
     return new_lt
+
+def size(lst):
+    return lst.get("size")
 
 def is_empty(lst):
     return lst["size"] == 0
@@ -29,9 +31,6 @@ def is_present(lst, element, cmp_function=None):
         if cmp_function(element, info) == 0:
             return i
     return -1
-
-def size(lst):
-    return lst["size"]
 
 def first_element(lst):
     if lst["size"] > 0:
@@ -65,6 +64,26 @@ def change_info(lst, old_element, new_element):
         return True
     return False
 
-def iterator(lst: dict):
+def iterator(lst):
     for pos in range(lst["size"]):
         yield lst["elements"][pos]
+        
+def exchange(lst, pos1, pos2):
+    if 0 <= pos1 < lst["size"] and 0 <= pos2 < lst["size"]:
+        lst["elements"][pos1], lst["elements"][pos2] = lst["elements"][pos2], lst["elements"][pos1]
+        return True
+    return False        
+        
+def sort(lst, sort_crit) :
+        size = lst["size"]
+        pos1 = 1
+        while pos1 <= size:
+            pos2 = pos1
+            while (pos2 > 1) and sort_crit(get_element(lst, pos2), get_element(lst, pos2-1)) :
+                exchange(lst, pos2, pos2-1)
+                pos2 -= 1
+            pos1 += 1
+        return lst     
+
+def update(lst: dict, pos: int, element) -> None:
+    lst["elements"][pos] = element   

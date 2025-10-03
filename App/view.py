@@ -8,7 +8,7 @@ def new_logic():
         Se crea una instancia del controlador
     """
     #TODO: Llamar la función de la lógica donde se crean las estructuras de datos
-    pass
+    return lg.new_logic()
 
 def print_menu():
     print("Bienvenido")
@@ -27,8 +27,8 @@ def load_data(control):
     """
     #TODO: Realizar la carga de datos
     catalog = new_logic()
-    catalog = lg.load_data(catalog)
-    return catalog
+    data = lg.load_data(catalog)
+    return data
 
 
 def print_data(control, id):
@@ -43,26 +43,27 @@ def print_req_1(data, date_min, date_max, num):
         Función que imprime la solución del Requerimiento 1 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 1
-    info = lg.req_1(data, date_min, date_max, num)
+    date_min_int = lg.date_to_int(date_min)
+    date_max_int = lg.date_to_int(date_max)
+    info = lg.req_1(data, date_min_int, date_max_int, num)
     if len(info) == 3:
-        final_list, num, time = info
+        print("3")
+        final_list, count, time = info
         print(f"\nTiempo de ejecución: {time} ms")
         print(f"Número total de trayectos en la franja: {ll.size(final_list)}")
-        print(f"\nLos {num} primeros trayectos en la franja son:")
-        for i in range(num):
-            print(ll.get_element(final_list, i))
-        print(f"\nLos {num} últimos trayectos en la franja son:")
-        for i in range(ll.size(final_list) - num, ll.size(final_list)):
+        print(f"\nLos {ll.size(final_list)} trayectos en la franja son:")
+        for i in range(ll.size(final_list)):
             print(ll.get_element(final_list, i))
     else:
-        final_list_1, final_list_2, total, time = info
+        print(len(info))
+        final_list_1, final_list_2, count, time = info
         print(f"\nTiempo de ejecución: {time} ms")
-        print(f"Número total de trayectos en la franja: {total}")
-        print(f"\nLos {num} primeros trayectos en la franja son:")
-        for i in range(num):
+        print(f"Número total de trayectos en la franja: {count}")
+        print(f"\nLos {count} primeros trayectos en la franja son:")
+        for i in range(count):
             print(ll.get_element(final_list_1, i))
-        print(f"\nLos {num} últimos trayectos en la franja son:")
-        for i in range(num):
+        print(f"\nLos {count} últimos trayectos en la franja son:")
+        for i in range(count):
             print(ll.get_element(final_list_2, i))
 
 
@@ -82,13 +83,20 @@ def print_req_3(control):
     pass
 
 
-def print_req_4(control):
+def print_req_4(data, date, time, flag, num):
     """
         Función que imprime la solución del Requerimiento 4 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 4
-    pass
-
+    ranked_list, count, ex_time = lg.req_4(data, date, time, flag)
+    print(f"\nLos {num} primeros trayectos ({time}, {date})")
+    for i in range(num):
+        print(ll.get_element(ranked_list, i))
+    print(f"\nLos {num} últimos trayectos ({time}, {date})")
+    for i in range(num):
+        print(ll.get_element(ranked_list, ll.size(ranked_list) - num + i))    
+    print(f"\nTiempo de ejecución:{ex_time} ms")
+    print(f"Número total de barrios con al menos {ll.size(ranked_list)} viajes iniciados a esa hora: {count}")
 
 def print_req_5(control):
     """
@@ -123,9 +131,8 @@ def main():
             data = load_data(control)
             print(data)
         elif int(inputs) == 1:
-            print_req_1(control)
-            date_min = input("Ingrese la fecha y hora inicial de la franja (formato “%Y-%m-%d %H:%M:%S” ej.: '2015-01-15 07:00:00'): ")
-            date_max = input("Ingrese la fecha y hora final de la franja: ")
+            date_min = "2015-01-07 22:08:47" #input("Ingrese la fecha y hora inicial de la franja (formato “%Y-%m-%d %H:%M:%S” ej.: '2015-01-15 07:00:00'): ")
+            date_max = "2015-01-25 22:06:47" #input("Ingrese la fecha y hora final de la franja: ")
             num = int(input("Ingrese el tamaño de la muestra (num) de trayectos a mostrar al principio y al final de la franja: "))
             print_req_1(data, date_min, date_max, num)
 
@@ -136,7 +143,11 @@ def main():
             print_req_3(control)
 
         elif int(inputs) == 4:
-            print_req_4(control)
+            date = "2015-01-15" #input("Ingrese la fecha (formato “%Y-%m-%d” ej.: '2015-01-15'): ")
+            time = "17:00:00" #input("Ingrese la hora (formato “%H:%M:%S” ej.: '07:00:00'): ")
+            flag = bool(int(input("Ingrese 1 si desea ver los 5 barrios con más viajes iniciados a esa hora, o 0 si desea ver los 5 barrios con más viajes terminados a esa hora: ")))
+            num = int(input("Ingrese el número de viajes mínimos que debe tener un barrio para ser considerado en el ranking: "))
+            print_req_4(data, date, time, flag, num)
 
         elif int(inputs) == 5:
             print_req_5(control)

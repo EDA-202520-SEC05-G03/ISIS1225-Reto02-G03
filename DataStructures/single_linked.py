@@ -36,13 +36,13 @@ def add_first(lst, element):
     new_node = new_single_node(element)
     new_node["next"] = lst["first"]
     lst["first"] = new_node
-    if lst["size"] == 0:
+    if is_not_empty(lst):
         lst["last"] = new_node
     lst["size"] += 1
 
 def add_last(lst, element):
     new_node = new_single_node(element)
-    if lst["size"] == 0:
+    if is_not_empty(lst):
         lst["first"] = new_node
     else:
         lst["last"]["next"] = new_node
@@ -56,10 +56,10 @@ def last_element(lst):
     return lst["last"]["data"] if lst["last"] else None
 
 def size(lst):
-    return lst["size"]
+    return lst.get("size")
 
-def is_empty(lst):
-    return lst["size"] == 0
+def is_not_empty(lst):
+    return size(lst) == 0
 
 def remove_element(lst, pos):
     if pos < 0 or pos >= lst["size"]:
@@ -117,3 +117,54 @@ def iterator(lst):
     while cur:
         yield cur["data"]
         cur = cur["next"]
+        
+def switch_elements(lst, pos1, pos2):
+    if pos1 < 0 or pos1 >= lst["size"] or pos2 < 0 or pos2 >= lst["size"] or pos1 == pos2:
+        return False
+    if pos1 > pos2:
+        pos1, pos2 = pos2, pos1
+    prev1 = None
+    cur1 = lst["first"]
+    idx = 0
+    while idx < pos1:
+        prev1 = cur1
+        cur1 = cur1["next"]
+        idx += 1
+    prev2 = prev1
+    cur2 = cur1
+    while idx < pos2:
+        prev2 = cur2
+        cur2 = cur2["next"]
+        idx += 1
+    if prev1:
+        prev1["next"] = cur2
+    else:
+        lst["first"] = cur2
+    if prev2 != cur1:
+        prev2["next"] = cur1
+    else:
+        prev2 = cur1
+    temp = cur1["next"]
+    cur1["next"] = cur2["next"]
+    cur2["next"] = temp
+    if cur1["next"] is None:
+        lst["last"] = cur1
+    if cur2["next"] is None:
+        lst["last"] = cur2
+    return True
+
+def sort(lst, sort_crit, reverse=False):
+    size = lst["size"]
+    pos1 = 1
+    while pos1 <= size:
+        pos2 = pos1
+        while pos2 > 1:
+            cmp = sort_crit(get_element(lst, pos2 - 1), get_element(lst, pos2 - 2))
+            if (not reverse and cmp < 0) or (reverse and cmp > 0):
+                switch_elements(lst, pos2 - 1, pos2 - 2)
+                pos2 -= 1
+            else:
+                break
+        pos1 += 1
+    return lst
+   
