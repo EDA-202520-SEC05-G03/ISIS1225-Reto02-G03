@@ -157,7 +157,7 @@ def info_req3(record):
     return (date_pickup, [lat_pickup, lon_pickup], date_dropoff, [lat_dropoff, lon_dropoff], distance, total_cost)
 
 
-def req_3(catalog):
+def req_3(catalog, dist_min, dist_max, num):
     """
     Retorna el resultado del requerimiento 3
     """
