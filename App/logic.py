@@ -144,13 +144,54 @@ def req_2(catalog):
     # TODO: Modificar el requerimiento 2
     pass
 
+def info_req3(record):
+    
+    date_pickup = record["pickup_datetime"]
+    date_dropoff = record["dropoff_datetime"]
+    lat_pickup = float(record["pickup_latitude"])
+    lon_pickup = float(record["pickup_longitude"])
+    lat_dropoff = float(record["dropoff_latitude"])
+    lon_dropoff = float(record["dropoff_longitude"])
+    distance = float(record["trip_distance"])
+    total_cost = float(record["total_amount"])
+    return (date_pickup, [lat_pickup, lon_pickup], date_dropoff, [lat_dropoff, lon_dropoff], distance, total_cost)
+
 
 def req_3(catalog):
     """
     Retorna el resultado del requerimiento 3
     """
     # TODO: Modificar el requerimiento 3
-    pass
+    start = get_time()
+    filtered = ll.new_list()
+
+    total = lt.size(catalog["trips"])
+    for i in range(total):
+        rec = lt.get_element(catalog["trips"], i)
+        dist = float(rec["trip_distance"])
+        if dist_min <= dist <= dist_max:
+            ll.add_last(filtered, rec)
+
+    ll.sort(filtered, compare_distance_desc)
+
+    size = ll.size(filtered)
+    if size > 2 * num:
+        first_list = ll.new_list()
+        last_list = ll.new_list()
+        for i in range(num):
+            r1 = ll.get_element(filtered, i)
+            ll.add_last(first_list, info_req3(r1))
+            r2 = ll.get_element(filtered, size - 1 - i)
+            ll.add_last(last_list, info_req3(r2))
+        end = get_time()
+        return (first_list, last_list, size, num, delta_time(start, end))
+    else:
+        all_list = ll.new_list()
+        for i in range(size):
+            r = ll.get_element(filtered, i)
+            ll.add_last(all_list, info_req3(r))
+        end = get_time()
+        return (all_list, size, delta_time(start, end))
 
 # Funciones auxiliares
 
