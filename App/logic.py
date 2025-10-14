@@ -50,7 +50,8 @@ def load_data(catalog):
 
     return catalog
 
-# Funciones de consulta sobre el catálogo
+# Funciones de consulta sobre el catálogos
+
 
 def compare_dates(record_1, record_2):
     date_1 = record_1["pickup_datetime"]
@@ -69,6 +70,23 @@ def date_to_int(date_str):
     """
     date_clean = date_str.replace(" ", "").replace("-", "").replace(":", "")
     return int(date_clean)
+
+def compare_distance_desc(record_1, record_2):
+    d1 = float(record_1["trip_distance"])
+    d2 = float(record_2["trip_distance"])
+    if d1 > d2:
+        return 0
+    elif d1 < d2:
+        return 1
+    else:
+        t1 = float(record_1["total_amount"])
+        t2 = float(record_2["total_amount"])
+        if t1 > t2:
+            return 0
+        elif t1 < t2:
+            return 1
+        else:
+            return -1
 
 def info_req1(record):
     """
