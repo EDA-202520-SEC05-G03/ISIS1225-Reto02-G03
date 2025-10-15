@@ -160,7 +160,10 @@ def main():
             print_req_2(control)
 
         elif int(inputs) == 3:
-            print_req_3(control)
+            dist_min = float(input("Distancia mínima (mi): ").strip())
+            dist_max = float(input("Distancia máxima (mi): ").strip())
+            num = int(input("Tamaño de la muestra (N): ").strip())
+            print_req_3(control, dist_min, dist_max, num)
 
         elif int(inputs) == 4:
             date = "2015-01-15" #input("Ingrese la fecha (formato “%Y-%m-%d” ej.: '2015-01-15'): ")
