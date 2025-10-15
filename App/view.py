@@ -75,12 +75,32 @@ def print_req_2(control):
     pass
 
 
-def print_req_3(control):
+def print_req_3(data, dist_min, dist_max, num):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 3
-    pass
+    # Ejecutar la lógica del requerimiento 3
+    info = lg.req_3(data, dist_min, dist_max, num)
+
+    if len(info) == 3:
+        all_list, count, time = info
+        print(f"\nTiempo de ejecución: {time:.2f} ms")
+        print(f"Número total de trayectos en el rango: {count}")
+        print(f"\nLos {ll.size(all_list)} trayectos dentro del rango son:")
+        for i in range(ll.size(all_list)):
+            print(ll.get_element(all_list, i))
+
+    else:
+        first_list, last_list, total, num, time = info
+        print(f"\nTiempo de ejecución: {time:.2f} ms")
+        print(f"Número total de trayectos en el rango: {total}")
+        print(f"\nLos {num} primeros trayectos (mayores distancias):")
+        for i in range(num):
+            print(ll.get_element(first_list, i))
+        print(f"\nLos {num} últimos trayectos (menores distancias dentro del rango):")
+        for i in range(num):
+            print(ll.get_element(last_list, i))
+    
 
 
 def print_req_4(data, date, time, flag, num):
