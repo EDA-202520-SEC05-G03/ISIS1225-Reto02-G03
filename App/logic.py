@@ -180,12 +180,15 @@ def req_3(catalog, dist_min, dist_max, num):
     Retorna el resultado del requerimiento 3
     """
     # TODO: Modificar el requerimiento 3
-    start = get_time()
-    filtered = ll.new_list()
+    dist_min = float(dist_min)
+    dist_max = float(dist_max)
+    if dist_min > dist_max:
+        dist_min, dist_max = dist_max, dist_min
 
-    total = lt.size(catalog["trips"])
-    for i in range(total):
-        rec = lt.get_element(catalog["trips"], i)
+    start = get_time()
+
+    filtered = ll.new_list()
+    for rec in lt.iterator(catalog["trips"]):
         dist = float(rec["trip_distance"])
         if dist_min <= dist <= dist_max:
             ll.add_last(filtered, rec)
@@ -193,6 +196,11 @@ def req_3(catalog, dist_min, dist_max, num):
     ll.sort(filtered, compare_distance_desc)
 
     size = ll.size(filtered)
+
+    if size == 0:
+        end = get_time()
+        return (ll.new_list(), 0, delta_time(start, end))
+
     if size > 2 * num:
         first_list = ll.new_list()
         last_list = ll.new_list()
@@ -205,9 +213,8 @@ def req_3(catalog, dist_min, dist_max, num):
         return (first_list, last_list, size, num, delta_time(start, end))
     else:
         all_list = ll.new_list()
-        for i in range(size):
-            r = ll.get_element(filtered, i)
-            ll.add_last(all_list, info_req3(r))
+        for rec in ll.iterator(filtered):
+            ll.add_last(all_list, info_req3(rec))
         end = get_time()
         return (all_list, size, delta_time(start, end))
 
