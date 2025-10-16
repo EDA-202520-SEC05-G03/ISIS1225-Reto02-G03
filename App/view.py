@@ -67,13 +67,30 @@ def print_req_1(data, date_min, date_max, num):
             print(ll.get_element(final_list_2, i))
 
 
-def print_req_2(control):
+def print_req_2(data, lat_min, lat_max, num):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 2
-    pass
-
+    info = lg.req_2(data, lat_min, lat_max, num)
+    
+    if len(info) == 3:
+        all_list, count, time = info
+        print(f"\nTiempo de ejecución: {time:.2f} ms")
+        print(f"Número total de trayectos en el rango: {count}")
+        print(f"\nLos {ll.size(all_list)} trayectos dentro del rango son:")
+        for i in range(ll.size(all_list)):
+            print(ll.get_element(all_list, i))
+    else:
+        first_list, last_list, total, num, time = info
+        print(f"\nTiempo de ejecución: {time:.2f} ms")
+        print(f"Número total de trayectos en el rango: {total}")
+        print(f"\nLos {num} primeros trayectos (mayores latitudes):")
+        for i in range(num):
+            print(ll.get_element(first_list, i))
+        print(f"\nLos {num} últimos trayectos (menores latitudes dentro del rango):")
+        for i in range(num):
+            print(ll.get_element(last_list, i))
 
 def print_req_3(data, dist_min, dist_max, num):
     """

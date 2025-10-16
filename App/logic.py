@@ -155,12 +155,67 @@ def req_1(catalog, date_min, date_max, num):
         time = delta_time(a, b)
         return (final_list, size, time)
 
-def req_2(catalog):
+def info_req2(record):
+    date_pickup = record["pickup_datetime"]
+    date_dropoff = record["dropoff_datetime"]
+    lat_pickup = float(record["pickup_latitude"])
+    lon_pickup = float(record["pickup_longitude"])
+    lat_dropoff = float(record["dropoff_latitude"])
+    lon_dropoff = float(record["dropoff_longitude"])
+    distance = float(record["trip_distance"])
+    total_cost = float(record["total_amount"])
+    return (date_pickup, [lat_pickup, lon_pickup], date_dropoff, [lat_dropoff, lon_dropoff], distance, total_cost)
+
+def compare_lat_long_desc(record_1, record_2):
+    lat1 = float(record_1["pickup_latitude"])
+    lon1 = float(record_1["pickup_longitude"])
+    lat2 = float(record_2["pickup_latitude"])
+    lon2 = float(record_2["pickup_longitude"])
+    if lat1 < lat2:
+        return True
+    elif lat1 > lat2:
+        return False
+    else:
+        return lon1 < lon2
+ 
+def req_2(catalog, lat_min, lat_max, num):
     """
     Retorna el resultado del requerimiento 2
     """
     # TODO: Modificar el requerimiento 2
-    pass
+    lat_min = float(lat_min)
+    lat_max = float(lat_max)
+    if lat_min > lat_max:
+        lat_min, lat_max = lat_max, lat_min
+        
+    start = get_time()
+    filtered = ll.new_list()
+    for rec in lt.iterator(catalog["trips"]):
+        lat = float(rec["pickup_latitude"])
+        if lat_min <= lat <= lat_max:
+            ll.add_last(filtered, rec)
+    
+    ll.sort(filtered, compare_lat_long_desc)
+    size = ll.size(filtered)
+    if size == 0:
+        end = get_time()
+        return (ll.new_list(), 0, delta_time(start, end))
+    if size > 2 * num:
+        first_list = ll.new_list()
+        last_list = ll.new_list()
+        for i in range(num):
+            r1 = ll.get_element(filtered, i)
+            ll.add_last(first_list, info_req2(r1))
+            r2 = ll.get_element(filtered, size - 1 - i)
+            ll.add_last(last_list, info_req2(r2))
+        end = get_time()
+        return (first_list, last_list, size, num, delta_time(start, end))
+    else:
+        all_list = ll.new_list()
+        for rec in ll.iterator(filtered):
+            ll.add_last(all_list, info_req2(rec))
+        end = get_time()
+        return (all_list, size, delta_time(start, end))
 
 def info_req3(record):
     
