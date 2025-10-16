@@ -130,8 +130,46 @@ def print_req_6(control):
     """
         Función que imprime la solución del Requerimiento 6 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 6
-    pass
+    
+    resultado = lg.requerimiento_6(data, barrio, hora_ini, hora_fin, n)
+
+    # Caso 1: retorna (todos, total, tiempo)
+    if len(resultado) == 3:
+        lista_todos, total, tiempo = resultado
+        print(f"\nTiempo de ejecución: {tiempo:.2f} ms")
+        print(f"Barrio: {barrio}  |  Rango de horas: {hora_ini}-{hora_fin}")
+        print(f"Total de trayectos encontrados: {total}")
+
+        if total == 0:
+            print("\nNo se encontraron trayectos que cumplan el filtro.")
+        else:
+            print(f"\nSe listan todos los {total} trayectos (menos de 2N):\n")
+            for i in range(ll.size(lista_todos)):
+                viaje = ll.get_element(lista_todos, i)
+                print(f"  Recogida: {viaje[0]}  |  Pos: [{viaje[1][0]}, {viaje[1][1]}]")
+                print(f"  Dejada:   {viaje[2]}  |  Pos: [{viaje[3][0]}, {viaje[3][1]}]")
+                print(f"  Distancia: {viaje[4]} mi  |  Total: ${viaje[5]}\n")
+
+    # Caso 2: retorna (primeros, ultimos, total, n, tiempo)
+    else:
+        primeros, ultimos, total, n_devuelto, tiempo = resultado
+        print(f"\nTiempo de ejecución: {tiempo:.2f} ms")
+        print(f"Barrio: {barrio}  |  Rango de horas: {hora_ini}-{hora_fin}")
+        print(f"Total de trayectos encontrados: {total}")
+
+        print(f"\nPrimeros {n_devuelto} trayectos (más antiguos → más recientes):\n")
+        for i in range(ll.size(primeros)):
+            viaje = ll.get_element(primeros, i)
+            print(f"  Recogida: {viaje[0]}  |  Pos: [{viaje[1][0]}, {viaje[1][1]}]")
+            print(f"  Dejada:   {viaje[2]}  |  Pos: [{viaje[3][0]}, {viaje[3][1]}]")
+            print(f"  Distancia: {viaje[4]} mi  |  Total: ${viaje[5]}\n")
+
+        print(f"\nÚltimos {n_devuelto} trayectos (más antiguos → más recientes):\n")
+        for i in range(ll.size(ultimos)):
+            viaje = ll.get_element(ultimos, i)
+            print(f"  Recogida: {viaje[0]}  |  Pos: [{viaje[1][0]}, {viaje[1][1]}]")
+            print(f"  Dejada:   {viaje[2]}  |  Pos: [{viaje[3][0]}, {viaje[3][1]}]")
+            print(f"  Distancia: {viaje[4]} mi  |  Total: ${viaje[5]}\n")
 
 # Se crea la lógica asociado a la vista
 control = new_logic()
@@ -175,8 +213,13 @@ def main():
         elif int(inputs) == 5:
             print_req_5(control)
 
-        elif int(inputs) == 5:
-            print_req_6(control)
+        elif int(inputs) == 6:
+            barrio = input("Barrio de recogida (ej. 'Midtown'): ").strip()
+            hora_ini = input("Hora inicial (HH, ej. '09'): ").strip()
+            hora_fin = input("Hora final (HH, ej. '12'): ").strip()
+            n = int(input("Tamaño de la muestra (N): ").strip())
+            print_req_6(data, barrio, hora_ini, hora_fin, n)
+           
 
         elif int(inputs) == 7:
             working = False
