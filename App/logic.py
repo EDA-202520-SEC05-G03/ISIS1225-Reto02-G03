@@ -321,12 +321,155 @@ def req_5(catalog):
     # TODO: Modificar el requerimiento 5
     pass
 
-def req_6(catalog):
+def distancia_haversine(lat1, lon1, lat2, lon2):
     """
-    Retorna el resultado del requerimiento 6
+    Calcula la distancia Haversine (en millas) entre dos coordenadas geográficas.
     """
-    # TODO: Modificar el requerimiento 6
-    pass
+    radio_tierra = 3958.8  # en millas
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+
+    a = math.sin(dlat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * (math.sin(dlon / 2) ** 2)
+    c = 2 * math.asin(math.sqrt(a))
+    return radio_tierra * c
+
+
+def obtener_hora(fecha_hora):
+    """
+    Extrae la hora (HH) de una cadena con formato 'YYYY-MM-DD HH:MM:SS'.
+    """
+    return int(fecha_hora[11:13])
+
+
+def barrio_mas_cercano(lista_barrios, lat, lon):
+    """
+    Retorna el nombre del barrio más cercano a una coordenada (lat, lon),
+    usando la distancia Haversine.
+    """
+    distancia_minima = None
+    barrio_cercano = None
+
+    for barrio in lt.iterator(lista_barrios):
+        lat_barrio = float(barrio["latitude"])
+        lon_barrio = float(barrio["longitude"])
+        distancia = distancia_haversine(lat, lon, lat_barrio, lon_barrio)
+
+        if distancia_minima is None or distancia < distancia_minima:
+            distancia_minima = distancia
+            barrio_cercano = barrio["neighborhood"]
+
+    return barrio_cercano
+
+
+def crear_mapa_barrios(catalogo):
+    """
+    Crea un mapa hash donde la llave es el nombre del barrio
+    y el valor es una lista con los trayectos de ese barrio.
+    """
+    mapa_barrios = mp.new_map()
+    lista_barrios = catalogo["neighborhoods"]
+
+    for trayecto in lt.iterator(catalogo["trips"]):
+        lat = float(trayecto["pickup_latitude"])
+        lon = float(trayecto["pickup_longitude"])
+        nombre_barrio = barrio_mas_cercano(lista_barrios, lat, lon)
+
+        if mp.contains(mapa_barrios, nombre_barrio):
+            lista_trayectos = mp.get(mapa_barrios, nombre_barrio)["value"]
+            ll.add_last(lista_trayectos, trayecto)
+        else:
+            nueva_lista = ll.new_list()
+            ll.add_last(nueva_lista, trayecto)
+            mp.put(mapa_barrios, nombre_barrio, nueva_lista)
+
+    catalogo["indice_barrios"] = mapa_barrios
+    return mapa_barrios
+
+
+def comparar_por_fecha_recogida(viaje1, viaje2):
+    """
+    Compara dos viajes por fecha de recogida (pickup_datetime)
+    para orden ascendente 
+    """
+    f1 = viaje1["pickup_datetime"]
+    f2 = viaje2["pickup_datetime"]
+    if f1 < f2:
+        return 0
+    elif f1 > f2:
+        return 1
+    else:
+        return -1
+
+
+def info_requerimiento6(viaje):
+    """
+    Retorna la información relevante de un viaje para el req 6, que es la misma que el req 1.
+    """
+    return info_req1(viaje)
+
+
+def requerimiento_6(catalogo, nombre_barrio, hora_inicio, hora_fin, cantidad):
+    """
+    Retorna los trayectos recogidos en un barrio dentro de un rango de horas.
+    """
+    hora_inicio = int(hora_inicio)
+    hora_fin = int(hora_fin)
+
+    if hora_inicio > hora_fin:
+        temp = hora_inicio
+        hora_inicio = hora_fin
+        hora_fin = temp
+
+    inicio = get_time()
+
+   
+    if "indice_barrios" in catalogo:
+        mapa_barrios = catalogo["indice_barrios"]
+    else:
+        mapa_barrios = crear_mapa_barrios(catalogo)
+
+    if not mp.contains(mapa_barrios, nombre_barrio):
+        fin = get_time()
+        return (ll.new_list(), 0, delta_time(inicio, fin))
+
+    lista_barrio = mp.get(mapa_barrios, nombre_barrio)["value"]
+
+    lista_filtrada = ll.new_list()
+    for trayecto in ll.iterator(lista_barrio):
+        hora = obtener_hora(trayecto["pickup_datetime"])
+        if hora >= hora_inicio and hora <= hora_fin:
+            ll.add_last(lista_filtrada, trayecto)
+
+    ll.sort(lista_filtrada, comparar_por_fecha_recogida)
+
+    total = ll.size(lista_filtrada)
+
+    if total == 0:
+        fin = get_time()
+        return (ll.new_list(), 0, delta_time(inicio, fin))
+
+    if total > 2 * cantidad:
+        primeros = ll.new_list()
+        ultimos = ll.new_list()
+
+        for i in range(cantidad):
+            viaje1 = ll.get_element(lista_filtrada, i)
+            ll.add_last(primeros, info_requerimiento6(viaje1))
+            viaje2 = ll.get_element(lista_filtrada, total - 1 - i)
+            ll.add_last(ultimos, info_requerimiento6(viaje2))
+
+        fin = get_time()
+        return (primeros, ultimos, total, cantidad, delta_time(inicio, fin))
+    else:
+        todos = ll.new_list()
+        for trayecto in ll.iterator(lista_filtrada):
+            ll.add_last(todos, info_requerimiento6(trayecto))
+
+        fin = get_time()
+        return (todos, total, delta_time(inicio, fin))
+
 
 
 # Funciones para medir tiempos de ejecucion
