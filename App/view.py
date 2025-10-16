@@ -126,7 +126,7 @@ def print_req_5(control):
     pass
 
 
-def print_req_6(control):
+def print_req_6(data, barrio, hora_ini, hora_fin, n):
     """
         Función que imprime la solución del Requerimiento 6 en consola
     """
