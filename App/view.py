@@ -118,12 +118,50 @@ def print_req_4(data, date, time, flag, num):
     print(f"\nTiempo de ejecución:{ex_time} ms")
     print(f"Número total de barrios con al menos {ll.size(ranked_list)} viajes iniciados a esa hora: {count}")
 
-def print_req_5(control):
+def print_req_5(data, fecha_hora, n):
+
     """
-        Función que imprime la solución del Requerimiento 5 en consola
+        Función que imprime la solución del Requerimiento 5 en consola.
+        - fecha_hora: 'YYYY-MM-DD HH' (ej. '2015-01-15 08')
+        - n: tamaño de la muestra
     """
-    # TODO: Imprimir el resultado del requerimiento 5
-    pass
+    resultado = lg.req_5(data, fecha_hora, n)
+
+    if len(resultado) == 3:
+        lista_todos, total, tiempo = resultado
+        print(f"\nTiempo de ejecución: {tiempo:.2f} ms")
+        print(f"Fecha/Hora de terminación: {fecha_hora}")
+        print(f"Total de trayectos encontrados: {total}")
+
+        if total == 0:
+            print("\nNo se encontraron trayectos que cumplan el filtro.")
+        else:
+            print(f"\nSe listan todos los {total} trayectos (≤ 2N):\n")
+            for i in range(ll.size(lista_todos)):
+                viaje = ll.get_element(lista_todos, i)
+                print(f"  Recogida: {viaje[0]}  |  Pos: [{viaje[1][0]}, {viaje[1][1]}]")
+                print(f"  Dejada:   {viaje[2]}  |  Pos: [{viaje[3][0]}, {viaje[3][1]}]")
+                print(f"  Distancia: {viaje[4]} mi  |  Total: ${viaje[5]}\n")
+
+    else:
+        primeros, ultimos, total, n_devuelto, tiempo = resultado
+        print(f"\nTiempo de ejecución: {tiempo:.2f} ms")
+        print(f"Fecha/Hora de terminación: {fecha_hora}")
+        print(f"Total de trayectos encontrados: {total}")
+
+        print(f"\nPrimeros {n_devuelto} (más recientes → más antiguos):\n")
+        for i in range(ll.size(primeros)):
+            viaje = ll.get_element(primeros, i)
+            print(f"  Recogida: {viaje[0]}  |  Pos: [{viaje[1][0]}, {viaje[1][1]}]")
+            print(f"  Dejada:   {viaje[2]}  |  Pos: [{viaje[3][0]}, {viaje[3][1]}]")
+            print(f"  Distancia: {viaje[4]} mi  |  Total: ${viaje[5]}\n")
+
+        print(f"\nÚltimos {n_devuelto} (más recientes → más antiguos):\n")
+        for i in range(ll.size(ultimos)):
+            viaje = ll.get_element(ultimos, i)
+            print(f"  Recogida: {viaje[0]}  |  Pos: [{viaje[1][0]}, {viaje[1][1]}]")
+            print(f"  Dejada:   {viaje[2]}  |  Pos: [{viaje[3][0]}, {viaje[3][1]}]")
+            print(f"  Distancia: {viaje[4]} mi  |  Total: ${viaje[5]}\n")
 
 
 def print_req_6(data, barrio, hora_ini, hora_fin, n):
@@ -211,7 +249,9 @@ def main():
             print_req_4(data, date, time, flag, num)
 
         elif int(inputs) == 5:
-            print_req_5(control)
+            fecha_hora = input("Fecha y hora de terminación (YYYY-MM-DD HH, ej. '2015-01-15 08'): ").strip()
+            n = int(input("Tamaño de la muestra (N): ").strip())
+            print_req_5(data, fecha_hora, n)
 
         elif int(inputs) == 6:
             barrio = input("Barrio de recogida (ej. 'Midtown'): ").strip()

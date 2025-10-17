@@ -314,12 +314,88 @@ def req_4(data, date_str, time_str, flag):
         
     return (all_list, ll.size(all_list), time)
 
-def req_5(catalog):
+def compare_dropoff_desc(record_1, record_2):
     """
-    Retorna el resultado del requerimiento 5
+    Comparador para ordenar por fecha/hora de terminación (dropoff_datetime)
+    de más reciente (mayor) a más antiguo (menor).
     """
-    # TODO: Modificar el requerimiento 5
-    pass
+    t1 = record_1["dropoff_datetime"]   
+    t2 = record_2["dropoff_datetime"]
+    if t1 > t2:
+        return 0       
+    elif t1 < t2:
+        return 1      
+    else:
+        return -1 
+
+def req_5(catalog, fecha_hora, cantidad):
+    """
+    Requerimiento 5:
+    Retorna los trayectos en una fecha y hora de terminación específicas.
+    Solo se tiene en cuenta la parte de la hora (HH) del tiempo de terminación.
+    Los trayectos deben mostrarse del más reciente al más antiguo.
+    Restricción: debe resolverse usando una tabla hash cuya llave sea la fecha y hora de terminación (%Y-%m-%d %H).
+    
+    Parámetros:
+      - catalog: catálogo con trips y neighborhoods
+      - fecha_hora: string 'YYYY-MM-DD HH' (ej. '2015-01-15 08')
+      - cantidad: entero N (tamaño de muestra)
+    Retorna:
+      - (todos, total, tiempo_ms)           si total <= 2N
+      - (primeros, ultimos, total, N, tiempo_ms)  si total > 2N
+    """
+    inicio = get_time()
+
+    # Hash con capacidad inicial suficiente para evitar entradas None
+    mapa_dropoff = mp.new_map(4096)  # <-- evita TypeError en map.contains / is_available
+
+    # Construcción del índice: llave = 'YYYY-MM-DD HH'
+    for viaje in lt.iterator(catalog["trips"]):
+        fecha = viaje["dropoff_datetime"][:10]   # YYYY-MM-DD
+        hora = viaje["dropoff_datetime"][11:13]  # HH
+        llave = f"{fecha} {hora}"                # '%Y-%m-%d %H'
+
+        if mp.contains(mapa_dropoff, llave):
+            lista_viajes = mp.get(mapa_dropoff, llave)["value"]
+            ll.add_last(lista_viajes, viaje)
+        else:
+            nueva_lista = ll.new_list()
+            ll.add_last(nueva_lista, viaje)
+            mp.put(mapa_dropoff, llave, nueva_lista)
+
+    # Si no hay viajes para esa fecha-hora, retorno vacío
+    if not mp.contains(mapa_dropoff, fecha_hora):
+        fin = get_time()
+        return (ll.new_list(), 0, delta_time(inicio, fin))
+
+    lista_filtrada = mp.get(mapa_dropoff, fecha_hora)["value"]
+
+    # Ordenar de más reciente a más antiguo por dropoff_datetime
+    ll.sort(lista_filtrada, compare_dropoff_desc)
+
+    total = ll.size(lista_filtrada)
+    if total == 0:
+        fin = get_time()
+        return (ll.new_list(), 0, delta_time(inicio, fin))
+
+    # Si hay > 2N, devolver primeros N (más recientes) y últimos N (más antiguos)
+    if total > 2 * cantidad:
+        primeros = ll.new_list()
+        ultimos = ll.new_list()
+        for i in range(cantidad):
+            viaje1 = ll.get_element(lista_filtrada, i)
+            ll.add_last(primeros, info_req1(viaje1))
+            viaje2 = ll.get_element(lista_filtrada, total - 1 - i)
+            ll.add_last(ultimos, info_req1(viaje2))
+        fin = get_time()
+        return (primeros, ultimos, total, cantidad, delta_time(inicio, fin))
+
+    # Si hay <= 2N, devolver todos
+    todos = ll.new_list()
+    for viaje in ll.iterator(lista_filtrada):
+        ll.add_last(todos, info_req1(viaje))
+    fin = get_time()
+    return (todos, total, delta_time(inicio, fin))
 
 def distancia_haversine(lat1, lon1, lat2, lon2):
     """
@@ -344,20 +420,24 @@ def obtener_hora(fecha_hora):
 
 
 def barrio_mas_cercano(lista_barrios, lat, lon):
+   def barrio_mas_cercano(lista_barrios, lat, lon):
     """
-    Retorna el nombre del barrio más cercano a una coordenada (lat, lon),
-    usando la distancia Haversine.
+    Retorna el nombre del barrio más cercano dadas unas coordenadas.
+    Corrige el formato con coma decimal en 'latitude' y 'longitude'.
     """
     distancia_minima = None
     barrio_cercano = None
 
     for barrio in lt.iterator(lista_barrios):
-        lat_barrio = float(barrio["latitude"])
-        lon_barrio = float(barrio["longitude"])
-        distancia = distancia_haversine(lat, lon, lat_barrio, lon_barrio)
+        lat_barrio = barrio["latitude"].replace(",", ".")
+        lon_barrio = barrio["longitude"].replace(",", ".")
+        lat_barrio = float(lat_barrio)
+        lon_barrio = float(lon_barrio)
 
-        if distancia_minima is None or distancia < distancia_minima:
-            distancia_minima = distancia
+        
+        d = distancia_haversine(lat, lon, lat_barrio, lon_barrio)
+        if distancia_minima is None or d < distancia_minima:
+            distancia_minima = d
             barrio_cercano = barrio["neighborhood"]
 
     return barrio_cercano
